@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>滚动加载图片</title>
+<style type="text/css">
+	.hdiv{height:800px;width:100%;background:#f00;}
+</style>
+</head>
+
+<body>
+	<div class="hdiv"></div>
+	<div class="scrollLoading"><img src="images/loading.gif" data-src="images/1.jpg" /></div>
+	<img class="scrollLoading" src="images/loading.gif" data-src="images/1.jpg" />
+	<script type="text/javascript" src="jquery.js"></script>
+	<script type="text/javascript">
+		var scrollLoading = function(options){
+			var defaults = {
+				elem:'' //传入的对象 jquery对象
+				,isHide:false
+			}
+			,_cache=[],obj={}
+			,opts = $.extend(defaults, options)
+			,elem=opts.elem;
+
+			if(elem === ''){
+				return false;
+			}
+
+			obj.elem = elem;
+			obj.opts = opts;
+			if(opts.isHide){
+				obj.pObj = elem;
+				obj.elem = $(elem).find('img');
+			}
+
+			$.each(obj.elem,function(i,n){
+				var $n = $(n);
+				if ($n.length>0) {
+					var data={
+						obj:$n
+					};
+					_cache.push(data);
+				}
+			});
+
+			obj.cache = _cache;
+			var _this = obj;
+
+			var loading = function() {
+				var st = $(window).scrollTop(), sth = st + $(window).height();
+				if(_this.opts.isHide === true){
+					post = _this.pObj.offset().top; posb = post + _this.pObj.height();
+					if ((post > st && post < sth) || (posb > st && posb < sth)) {
+						$.each(_this.cache, function(i, data) {
+							var o = data.obj;
+							if (o) {
+								o.attr("src",o.attr("data-src")).removeAttr("data-src");
+								data.obj = null;
+							}
+						});
+					}
+				}else{
+					$.each(_this.cache, function(i, data) {
+						var o = data.obj;
+						if (o) {
+							post = o.offset().top; posb = post + o.height();
+							if ((post > st && post < sth) || (posb > st && posb < sth)) {
+								o.attr("src",o.attr("data-src")).removeAttr("data-src");
+								data.obj = null;
+							}
+						}
+					});
+				}
+				return false;
+			}
+			loading();
+			$(window).bind("scroll", loading);
+		};
+
+
+		/*
+			绑定的可以是img也是可以其他的，比如div
+			如果是其他的标签，比如div，则是以div进行判断，判断是否滚动到div的位置，如果滚动到该位置则找出其下面的img进行操作。
+		*/
+		$.fn.scrollLoading = function(options){
+			var defaults = {} //默认选项
+				,_cache=[],obj={}//缓存对象
+				,opts = $.extend(defaults, options)//合并
+			;
+
+			//提取需要操作的对象
+			$.each(this,function(i,n){
+				var $n = $(n)
+					,data = {}
+				;
+				if ($n.length>0) {
+					data.obj = $n;//缓存对象
+					data.tagName = n.tagName.toLowerCase();//读取tagName 用来判断是否为图片，如果是非图片则在后面的操作中需要操作该对象下的图片
+					_cache.push(data);
+				}
+			});
+			/**/
+
+			obj.cache = _cache;
+			var _this = obj;
+
+			var loading = function() {
+				var st = $(window).scrollTop()
+					, sth = st + $(window).height()
+					,num = 0
+				;
+				$.each(_this.cache, function(i, data) {
+					var o = data.obj
+						,_tag = data.tagName
+					;
+					if (o) {
+						post = o.offset().top;
+						posb = post + o.height();
+						if ((post > st && post < sth) || (posb > st && posb < sth)) {//判断是否滚动到了对应的位置
+							if(_tag !='img' ){
+								o = o.find('img');
+							}
+							//修改src
+							o.attr("src",function(){
+								return $(this).attr("data-src");
+							}).removeAttr("data-src");
+
+							//销毁
+							data.obj = null;
+						}
+					}else{//如果不存在则记录数量
+						num++;
+					}
+				});
+
+				//如果需要操作的对象都不存在，则清空数组，解除绑定
+				if(num === _this.cache.length){
+					_this.cache = null;
+					$(window).unbind("scroll", loading);
+				}
+
+				return false;
+			}
+			loading();
+			$(window).bind("scroll", loading);//绑定滚动事件
+
+		};
+		/*
+		scrollLoading({
+			elem:$('img.scrollLoading')
+		});
+		*/
+		$('.scrollLoading').scrollLoading();
+	</script>
+</body>
+</html>
