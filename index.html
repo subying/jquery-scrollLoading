@@ -14,71 +14,6 @@
 	<img class="scrollLoading" src="images/loading.gif" data-src="images/1.jpg" />
 	<script type="text/javascript" src="jquery.js"></script>
 	<script type="text/javascript">
-		var scrollLoading = function(options){
-			var defaults = {
-				elem:'' //传入的对象 jquery对象
-				,isHide:false
-			}
-			,_cache=[],obj={}
-			,opts = $.extend(defaults, options)
-			,elem=opts.elem;
-
-			if(elem === ''){
-				return false;
-			}
-
-			obj.elem = elem;
-			obj.opts = opts;
-			if(opts.isHide){
-				obj.pObj = elem;
-				obj.elem = $(elem).find('img');
-			}
-
-			$.each(obj.elem,function(i,n){
-				var $n = $(n);
-				if ($n.length>0) {
-					var data={
-						obj:$n
-					};
-					_cache.push(data);
-				}
-			});
-
-			obj.cache = _cache;
-			var _this = obj;
-
-			var loading = function() {
-				var st = $(window).scrollTop(), sth = st + $(window).height();
-				if(_this.opts.isHide === true){
-					post = _this.pObj.offset().top; posb = post + _this.pObj.height();
-					if ((post > st && post < sth) || (posb > st && posb < sth)) {
-						$.each(_this.cache, function(i, data) {
-							var o = data.obj;
-							if (o) {
-								o.attr("src",o.attr("data-src")).removeAttr("data-src");
-								data.obj = null;
-							}
-						});
-					}
-				}else{
-					$.each(_this.cache, function(i, data) {
-						var o = data.obj;
-						if (o) {
-							post = o.offset().top; posb = post + o.height();
-							if ((post > st && post < sth) || (posb > st && posb < sth)) {
-								o.attr("src",o.attr("data-src")).removeAttr("data-src");
-								data.obj = null;
-							}
-						}
-					});
-				}
-				return false;
-			}
-			loading();
-			$(window).bind("scroll", loading);
-		};
-
-
 		/*
 			绑定的可以是img也是可以其他的，比如div
 			如果是其他的标签，比如div，则是以div进行判断，判断是否滚动到div的位置，如果滚动到该位置则找出其下面的img进行操作。
@@ -146,11 +81,7 @@
 			$(window).bind("scroll", loading);//绑定滚动事件
 
 		};
-		/*
-		scrollLoading({
-			elem:$('img.scrollLoading')
-		});
-		*/
+
 		$('.scrollLoading').scrollLoading();
 	</script>
 </body>
